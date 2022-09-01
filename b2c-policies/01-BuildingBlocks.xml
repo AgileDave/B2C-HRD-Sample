@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="{Settings:Tenant}" PolicyId="B2C_1A_HrdCommon_BuildingBlocks" PublicPolicyUri="http://{Settings:Tenant}/B2C_1A_HrdCommon_BuildingBlocks">
+
+    <BasePolicy>
+        <TenantId>{Settings:Tenant}</TenantId>
+        <PolicyId>B2C_1A_TrustFrameworkExtensions</PolicyId>
+    </BasePolicy>
+
+
+    <BuildingBlocks>
+
+
+        <ClaimsSchema>
+            <ClaimType Id="signInName">
+                <DisplayName>Enter your Email address</DisplayName>
+                <UserHelpText>Email address to use for signing in.</UserHelpText>
+                <Restriction>
+                    <Pattern RegularExpression="^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$" HelpText="The email you provided is not valid." />
+                </Restriction>
+            </ClaimType>
+            <ClaimType Id="identityProviders">
+                <DisplayName>IdentityProviders</DisplayName>
+                <DataType>stringCollection</DataType>
+                <UserHelpText>User identity providers</UserHelpText>
+            </ClaimType>
+            <ClaimType Id="domainParameter">
+                <DisplayName>domainParameter</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText>parsed domain value from url</UserHelpText>
+            </ClaimType>
+            <ClaimType Id="tempDomainParameter">
+                <DisplayName>temp domainParameter</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText>parsed domain value from url</UserHelpText>
+            </ClaimType>
+            <ClaimType Id="knownDomain">
+                <DisplayName>knownDomain</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText>if this a domain that is a customer</UserHelpText>
+            </ClaimType>
+            <ClaimType Id="isKnownCustomer">
+                <DisplayName>knownDomain</DisplayName>
+                <DataType>boolean</DataType>
+                <UserHelpText>if this a domain that is a customer</UserHelpText>
+            </ClaimType>
+            <ClaimType Id="dummyTrue">
+                <DisplayName>dummy value for comparison</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText/>
+            </ClaimType>
+            <ClaimType Id="isAad">
+                <DisplayName>Is AAD Tenant</DisplayName>
+                <DataType>boolean</DataType>
+                <UserHelpText>if this a domain that is a AAD tenant</UserHelpText>
+            </ClaimType>
+            <ClaimType Id="isHrd">
+                <DisplayName>Is HRD</DisplayName>
+                <DataType>boolean</DataType>
+                <UserHelpText>if this a domain that is a AAD tenant</UserHelpText>
+            </ClaimType>
+
+        </ClaimsSchema>
+        <ClaimsTransformations>
+
+
+            <!--Demo: Gets the domain portion of the sign-in email address-->
+            <ClaimsTransformation Id="ParseDomain" TransformationMethod="ParseDomain">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="signInName" TransformationClaimType="emailAddress" />
+                </InputClaims>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="domainParameter" TransformationClaimType="domain" />
+                </OutputClaims>
+            </ClaimsTransformation>
+            <ClaimsTransformation Id="DomainLookup" TransformationMethod="LookupValue">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId = "domainParameter" TransformationClaimType="inputParameterId" />
+                </InputClaims>
+                <InputParameters>
+                    <InputParameter Id = "onmicrosoft.com" DataType="string" Value="true" />
+                    <InputParameter Id = "outlook.com" DataType="string" Value="true" />
+                    <InputParameter Id = "facebook.com" DataType="string" Value="true" />
+                    <InputParameter Id="agileways.com" DataType="string" Value="true" />
+                    <InputParameter Id= "errorOnFailedLookup" DataType="boolean" Value="false" />
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId = "knownDomain" TransformationClaimType="outputClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+
+            <ClaimsTransformation Id="CheckDomainParameterValue" TransformationMethod="CompareClaims">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="knownDomain" TransformationClaimType="inputClaim1" />
+                    <InputClaim ClaimTypeReferenceId="dummyTrue" TransformationClaimType="inputClaim2" />
+                </InputClaims>
+                <InputParameters>
+                    <InputParameter Id="operator" DataType="string" Value="EQUAL" />
+                    <InputParameter Id="ignoreCase" DataType="string" Value="true" />
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="isKnownCustomer" TransformationClaimType="outputClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+
+            <ClaimsTransformation Id="CreateidentityProvidersCollection" TransformationMethod="AddItemToStringCollection">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="domainParameter" TransformationClaimType="item" />
+                    <InputClaim ClaimTypeReferenceId="identityProviders" TransformationClaimType="collection" />
+                </InputClaims>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="identityProviders" TransformationClaimType="collection" />
+                </OutputClaims>
+            </ClaimsTransformation>
+        </ClaimsTransformations>
+
+        <ContentDefinitions>
+            <ContentDefinition Id="api.signuporsignin.hrd">
+                <LoadUri>~/tenant/templates/AzureBlue/unified.cshtml</LoadUri>
+                <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:unifiedssp:2.1.1</DataUri>
+                <Metadata>
+                    <Item Key="DisplayName">Signin and Signup using phone or email</Item>
+                    <Item Key="setting.bottomUnderFormClaimsProviderSelections">ChangePhoneNumber</Item>
+                </Metadata>
+            </ContentDefinition>
+        </ContentDefinitions>
+
+    </BuildingBlocks>
+
+</TrustFrameworkPolicy>
