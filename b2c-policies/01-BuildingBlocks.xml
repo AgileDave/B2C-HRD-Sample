@@ -60,6 +60,11 @@
                 <DataType>boolean</DataType>
                 <UserHelpText>if this a domain that is a AAD tenant</UserHelpText>
             </ClaimType>
+            <ClaimType Id="isSignUp">
+                <DisplayName>Is SIgn Up</DisplayName>
+                <DataType>boolean</DataType>
+                <UserHelpText>if this is via a SIGNUP flow</UserHelpText>
+            </ClaimType>
 
         </ClaimsSchema>
         <ClaimsTransformations>
@@ -125,6 +130,16 @@
                     <Item Key="setting.bottomUnderFormClaimsProviderSelections">ChangePhoneNumber</Item>
                 </Metadata>
             </ContentDefinition>
+            <ContentDefinition Id="api.localaccountsignup.hrd">
+                <LoadUri>~/tenant/templates/AzureBlue/selfAsserted.cshtml</LoadUri>
+                <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:2.1.7</DataUri>
+                <Metadata>
+                    <Item Key="DisplayName">Local account sign up page</Item>
+                </Metadata>
+            </ContentDefinition>
+
+
         </ContentDefinitions>
 
     </BuildingBlocks>
